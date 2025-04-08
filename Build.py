@@ -76,7 +76,7 @@ def get_platform_repo_url():
 
 def main():
     # Jenkins 环境变量（如果存在）
-    workspace = os.getenv("WORKSPACE", os.getcwd())
+    workspace = ”D:\Program Files\Jenkins\workspace“
     script_base_name = os.getenv("BUILD_SCRIPT", "build")  # 默认脚本名为 "build"
     branch = os.getenv("GIT_BRANCH", "main")              # 默认分支为 main
 
