@@ -1,7 +1,7 @@
 @echo off
 
 ::解决方案路径
-set "SOLUTION_PATH=.\solution.sln"
+set "SOLUTION_PATH=.\Project1.sln"
 :: 编译配置 
 set "BUILD_CONFIG=Release"         
 :: 编译平台      
