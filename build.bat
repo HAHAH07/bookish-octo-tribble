@@ -59,10 +59,6 @@ if %errorlevel% equ 0 (
     echo.
     echo Compile failed! Error code: %errorlevel% 
     type %MSBUILD_LOG% | findstr /i error
-    pause
     exit /b 1
 )
 
-pause
-:: 打开日志文件
-:: start notepad %MSBUILD_LOG%
