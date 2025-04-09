@@ -9,7 +9,7 @@ set "BUILD_PLATFORM=ARM64"
 :: 编译日志路径 
 set "MSBUILD_LOG=..\output\build_log.txt"      
 :: 设置输出目录
-set "OUTPUT_DIR=D:\Jenkins\output"
+set "OUTPUT_DIR=D:/Jenkins/output/"
 
 echo.
 echo [VS2022 Auto compilation]
