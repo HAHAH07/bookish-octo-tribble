@@ -8,6 +8,8 @@ set "BUILD_CONFIG=Release"
 set "BUILD_PLATFORM=ARM64"
 :: 编译日志路径 
 set "MSBUILD_LOG=..\output\build_log.txt"      
+:: 设置输出目录
+set "OUTPUT_DIR=D:\Jenkins\output"
 
 
 echo.
@@ -46,6 +48,7 @@ echo ===============================
 %MSBUILD_PATH% %SOLUTION_PATH% ^
  /p:Configuration=%BUILD_CONFIG% ^
  /p:Platform=%BUILD_PLATFORM% ^
+ /p:OutDir="%OUTPUT_DIR%" ^
  /t:Rebuild ^
  /flp:LogFile=%MSBUILD_LOG%;Verbosity=detailed ^
  /nr:false
