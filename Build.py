@@ -16,8 +16,8 @@ jenkins第一步更新三个py脚本到workspace
 将编译脚本和编译完成的文件转移到另一个目录
 '''
 
-workspace = "D:/Jenkins/workspace"      # 脚本目录
-compileSpace = "D:/Jenkins/compileSpace"  # 编译目录
+workspace = "D:/Jenkins/workspace"          # 脚本目录
+compileSpace = "D:/Jenkins/compileSpace"    # 编译目录
 script_base_name = os.getenv("BUILD_SCRIPT", "build")  # 默认脚本名build
 branch = os.getenv("GIT_BRANCH", "main")              # 默认分支main
 
@@ -130,6 +130,9 @@ def main():
 
         # 5.执行脚本
         success = run_script(script_path, args=["--config=release"])
+
+        # 6.删除本地仓临时脚本
+        os.remove(f"./{script_path}")
 
         # 6.返回状态码
         sys.exit(0 if success else 1)
