@@ -27,13 +27,13 @@ def get_platform_specific_script(script_name):
     system = platform.system().lower()
     if system == "windows":
         source_bat = os.path.join(script_dir, f"{script_name}.bat")
-        shutil.copy2(source_bat, workspace)
-        print(f"已复制: {source_bat} -> {os.path.join(workspace, f"{script_name}.bat")}")
+        shutil.copy2(source_bat, compileSpace)
+        print(f"已复制: {source_bat} -> {os.path.join(compileSpace, f"{script_name}.bat")}")
         return f"{script_name}.bat"
     elif system in ("linux", "darwin"):
         source_sh = os.path.join(script_dir, f"{script_name}.sh")
-        shutil.copy2(source_sh, workspace)
-        print(f"已复制: {source_sh} -> {os.path.join(workspace, f"{script_name}.sh")}")
+        shutil.copy2(source_sh, compileSpace)
+        print(f"已复制: {source_sh} -> {os.path.join(compileSpace, f"{script_name}.sh")}")
         return f"./{script_name}.sh"
     else:
         raise OSError(f"Unsupported operating system: {system}")
@@ -89,9 +89,12 @@ def pull_repository(repo_url, target_dir, branch="main"):
             command = f'git -C {target_dir} pull origin {branch}'
             result = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)
             print(result.stdout)
+
         except subprocess.CalledProcessError as e:
             print(f"Failed to pull repository: {e.stderr}")
             return False
+        print("Repository update successfully")
+        return True
                 
 
 # 根据操作系统返回对应的Git仓库地址
