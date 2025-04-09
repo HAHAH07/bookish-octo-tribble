@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import os
 import sys
 import subprocess
@@ -8,18 +5,41 @@ import platform
 import shutil
 from pathlib import Path
 
+
+'''
+jenkins第一步更新三个py脚本到workspace
+调用该脚本
+该脚本更新编译目录
+编译
+将编译脚本和编译完成的文件转移到另一个目录
+'''
+
+workspace = "D:/Jenkins/workspace"      # 脚本目录
+compileSpace = "D:/Jenkins/compileSpace"  # 编译目录
+script_base_name = os.getenv("BUILD_SCRIPT", "build")  # 默认脚本名build
+branch = os.getenv("GIT_BRANCH", "main")              # 默认分支main
+
+# 根据操作系统返回对应的脚本路径
 def get_platform_specific_script(script_name):
-    """根据操作系统返回对应的脚本路径"""
+    # 获取py脚本目录
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
     system = platform.system().lower()
     if system == "windows":
+        source_bat = os.path.join(script_dir, f"{script_name}.bat")
+        shutil.copy2(source_bat, workspace)
+        print(f"已复制: {source_bat} -> {os.path.join(workspace, f"{script_name}.bat")}")
         return f"{script_name}.bat"
-    elif system in ("linux", "darwin"):  # darwin = macOS
+    elif system in ("linux", "darwin"):
+        source_sh = os.path.join(script_dir, f"{script_name}.sh")
+        shutil.copy2(source_sh, workspace)
+        print(f"已复制: {source_sh} -> {os.path.join(workspace, f"{script_name}.sh")}")
         return f"./{script_name}.sh"
     else:
         raise OSError(f"Unsupported operating system: {system}")
 
+# 执行编译脚本并处理输出
 def run_script(script_path, args=None):
-    """执行编译脚本并处理输出"""
     if not os.path.exists(script_path):
         raise FileNotFoundError(f"Script not found: {script_path}")
 
@@ -45,27 +65,37 @@ def run_script(script_path, args=None):
         print(e.stdout)
         return False
 
-def clone_repository(repo_url, target_dir, branch="main"):
-    """从Git仓库克隆代码"""
-    if os.path.exists(target_dir):
-        shutil.rmtree(target_dir)
-    
-    print(f"Cloning repository: {repo_url} (branch: {branch})")
-    result = subprocess.run(
-        ["git", "clone", "--branch", branch, "--depth", "1", repo_url, target_dir],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True
-    )
-    
-    if result.returncode != 0:
-        print(f"Failed to clone repository:\n{result.stdout}")
-        return False
-    print("Repository cloned successfully")
-    return True
+def pull_repository(repo_url, target_dir, branch="main"):
+    # 从Git仓库克隆代码
+    if not os.path.exists(target_dir):
+        print(f"Cloning repository: {repo_url} (branch: {branch})")
+        result = subprocess.run(
+            ["git", "clone", "--branch", branch, "--depth", "1", repo_url, target_dir],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True
+        )
+        
+        if result.returncode != 0:
+            print(f"Failed to clone repository:\n{result.stdout}")
+            return False
+        print("Repository cloned successfully")
+        return True
 
+    # 从Git仓库更新代码
+    else:
+        print(f"pulling repository: {repo_url} (branch: {branch})")
+        try:
+            command = f'git -C {target_dir} pull origin {branch}'
+            result = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)
+            print(result.stdout)
+        except subprocess.CalledProcessError as e:
+            print(f"Failed to pull repository: {e.stderr}")
+            return False
+                
+
+# 根据操作系统返回对应的Git仓库地址
 def get_platform_repo_url():
-    """根据操作系统返回对应的Git仓库地址"""
     system = platform.system().lower()
     if system == "windows":
         return "https://github.com/HAHAH07/verbose-train.git"
@@ -75,32 +105,27 @@ def get_platform_repo_url():
         raise OSError(f"Unsupported operating system: {system}")
 
 def main():
-    # Jenkins 环境变量（如果存在）
-    workspace = ”D:\Program Files\Jenkins\workspace“
-    script_base_name = os.getenv("BUILD_SCRIPT", "build")  # 默认脚本名为 "build"
-    branch = os.getenv("GIT_BRANCH", "main")              # 默认分支为 main
-
     try:
-        # 1. 获取对应系统的Git仓库地址
+        # 1.获取对应系统的Git仓库地址
         repo_url = get_platform_repo_url()
         print(f"Detected OS: {platform.system()}, using repo: {repo_url}")
 
-        # 2. 克隆仓库到工作目录
-        if not clone_repository(repo_url, workspace, branch):
+        # 2.更新仓库到编译目录
+        if not pull_repository(repo_url, compileSpace, branch):
             sys.exit(1)
 
-        # 3. 切换到工作目录
-        os.chdir(workspace)
-        print(f"Working directory: {workspace}")
-
-        # 4. 获取系统对应的脚本
+        # 3.获取系统对应的脚本
         script_path = get_platform_specific_script(script_base_name)
         print(f"Using build script: {script_path}")
 
-        # 5. 执行脚本（可传递额外参数）
+        # 4.切换到编译目录
+        os.chdir(compileSpace)
+        print(f"Now directory: {compileSpace}")
+
+        # 5.执行脚本
         success = run_script(script_path, args=["--config=release"])
 
-        # 6. 返回状态码
+        # 6.返回状态码
         sys.exit(0 if success else 1)
 
     except Exception as e:
