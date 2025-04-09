@@ -57,6 +57,7 @@ def run_script(script_path, args=None):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
+            encoding='utf-8',  # 明确指定编码为 utf-8
             shell=(platform.system() == "Windows")  # Windows 需要 shell=True
         )
         print(result.stdout)
