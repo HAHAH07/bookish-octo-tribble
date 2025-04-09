@@ -1,10 +1,12 @@
 import os
+import io
 import sys
 import subprocess
 import platform
 import shutil
 from pathlib import Path
 
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 '''
 jenkins第一步更新三个py脚本到workspace
