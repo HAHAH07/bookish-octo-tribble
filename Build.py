@@ -16,8 +16,11 @@ jenkins第一步更新三个py脚本到workspace
 将编译脚本和编译完成的文件转移到另一个目录
 '''
 
-workspace = "D:/Jenkins/workspace"          # 脚本目录
-compileSpace = "D:/Jenkins/compileSpace"    # 编译目录
+git_win = "https://github.com/HAHAH07/verbose-train.git"
+git_linux = "https://github.com/HAHAH07/linux_source.git"
+compileSpace_now = "undefined"
+compileSpace_linux = "/home/xiehanqi/Jenkins/workspace"          # 脚本目录
+compileSpace_win = "D:/Jenkins/compileSpace"    # 编译目录
 script_base_name = os.getenv("BUILD_SCRIPT", "build")  # 默认脚本名build
 branch = os.getenv("GIT_BRANCH", "main")              # 默认分支main
 
@@ -29,13 +32,13 @@ def get_platform_specific_script(script_name):
     system = platform.system().lower()
     if system == "windows":
         source_bat = os.path.join(script_dir, f"{script_name}.bat")
-        shutil.copy2(source_bat, compileSpace)
-        print(f"已复制: {source_bat} -> {os.path.join(compileSpace, f"{script_name}.bat")}")
+        shutil.copy2(source_bat, compileSpace_win)
+        print(f"已复制: {source_bat} -> {os.path.join(compileSpace_win, f"{script_name}.bat")}")
         return f"{script_name}.bat"
     elif system in ("linux", "darwin"):
         source_sh = os.path.join(script_dir, f"{script_name}.sh")
-        shutil.copy2(source_sh, compileSpace)
-        print(f"已复制: {source_sh} -> {os.path.join(compileSpace, f"{script_name}.sh")}")
+        shutil.copy2(source_sh, compileSpace_linux)
+        print(f"已复制: {source_sh} -> {os.path.join(compileSpace_linux, f"{script_name}.sh")}")
         return f"./{script_name}.sh"
     else:
         raise OSError(f"Unsupported operating system: {system}")
@@ -104,9 +107,11 @@ def pull_repository(repo_url, target_dir, branch="main"):
 def get_platform_repo_url():
     system = platform.system().lower()
     if system == "windows":
-        return "https://github.com/HAHAH07/verbose-train.git"
+        compileSpace_now = compileSpace_win
+        return git_win
     elif system in ("linux", "darwin"):
-        return "https://github.com/HAHAH07/linux_source.git"
+        compileSpace_now = compileSpace_linux
+        return git_linux
     else:
         raise OSError(f"Unsupported operating system: {system}")
 
@@ -117,7 +122,7 @@ def main():
         print(f"Detected OS: {platform.system()}, using repo: {repo_url}")
 
         # 2.更新仓库到编译目录
-        if not pull_repository(repo_url, compileSpace, branch):
+        if not pull_repository(repo_url, compileSpace_now, branch):
             sys.exit(1)
 
         # 3.获取系统对应的脚本
@@ -125,8 +130,8 @@ def main():
         print(f"Using build script: {script_path}")
 
         # 4.切换到编译目录
-        os.chdir(compileSpace)
-        print(f"Now directory: {compileSpace}")
+        os.chdir(compileSpace_now)
+        print(f"Now directory: {compileSpace_now}")
 
         # 5.执行脚本
         success = run_script(script_path, args=["--config=release"])
