@@ -105,6 +105,7 @@ def pull_repository(repo_url, target_dir, branch="main"):
 
 # 根据操作系统返回对应的Git仓库地址
 def get_platform_repo_url():
+    global compileSpace_now
     system = platform.system().lower()
     if system == "windows":
         compileSpace_now = compileSpace_win
