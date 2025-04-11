@@ -106,7 +106,7 @@ def get_platform_repo_url():
     if system == "windows":
         return "https://github.com/HAHAH07/verbose-train.git"
     elif system in ("linux", "darwin"):
-        return "https://github.com/your-org/linux-build-repo.git"
+        return "https://github.com/HAHAH07/linux_source.git"
     else:
         raise OSError(f"Unsupported operating system: {system}")
 
